@@ -1,25 +1,56 @@
 ﻿using System;
 using System.Collections;
 
+using System.IO;
+
 namespace HammingCoderVol2
 {
     class Program
     {
-        static BitArray Code(string inMessage)
+        static BitArray ConvertFileToBitArray(string path)
         {
-            var messageArray = new BitArray(inMessage.Length, false);
-            for (int i = 0; i < inMessage.Length; i++)
+            byte[] fileBytes = File.ReadAllBytes(path);
+            BitArray messageArray = new BitArray(fileBytes);
+
+            return messageArray;
+        }
+
+        static void WriteBitArrayToFile(string fileName, BitArray bitArray)
+        {
+            byte[] bytes = new byte[bitArray.Length / 8 + (bitArray.Length % 8 == 0 ? 0 : 1)];
+            bitArray.CopyTo(bytes, 0);
+
+            string path = Directory.GetCurrentDirectory() + "\\" + fileName;
+
+            //File.Create(path);
+            using (FileStream fs = File.Create(path))
             {
-                if (inMessage[i] == '1')
-                    messageArray[i] = true;
+                fs.Write(bytes, 0, bytes.Length);
+            }
+        }
+
+        static BitArray MyCoding(BitArray messageArray)
+        {
+            int countBits = messageArray.Count; // кількість біт в масиві
+            BitArray messageCoded = new BitArray(countBits, false); // новий пустий масив біт
+
+            //for (int i = 0; i < countBits; i+=2) // якесь кодування (це заміни на те що потрібно)
+            //{
+            //    messageCoded[i] = messageArray[i] ^ true;
+            //    messageCoded[i+1] = messageArray[i+1] ^ false;
+            //}
+            for (int i = 0; i < countBits; i++)
+            {
+                if (messageArray[i] == true)
+                    messageCoded[i] = true;
                 else
-                    messageArray[i] = false;
+                    messageCoded[i] = false;
             }
             int messageInd = 0;
             int retInd = 0;
             int controlIndex = 1;
-            var retArray = new BitArray(messageArray.Length + 1 + (int)Math.Ceiling(Math.Log(messageArray.Length, 2)));
-            while (messageInd < messageArray.Length)
+            var retArray = new BitArray(messageCoded.Length + 1 + (int)Math.Ceiling(Math.Log(messageCoded.Length, 2)));
+            while (messageInd < messageCoded.Length)
             {
                 if (retInd + 1 == controlIndex)
                 {
@@ -27,7 +58,7 @@ namespace HammingCoderVol2
                     controlIndex = controlIndex * 2;
                     continue;
                 }
-                retArray.Set(retInd, messageArray.Get(messageInd));
+                retArray.Set(retInd, messageCoded.Get(messageInd));
                 messageInd++;
                 retInd++;
             }
@@ -53,31 +84,33 @@ namespace HammingCoderVol2
                 controlIndex = controlIndex / 2;
             }
             return retArray;
+            //return messageCoded;
         }
-
-        static BitArray Decode(string inMessage)
+        static BitArray MyDeCoding(BitArray messageArray)
         {
-            var codedArray = new BitArray(inMessage.Length, false);
-            for (int i = 0; i < codedArray.Length; i++)
+            int countBits = messageArray.Count; // кількість біт в масиві
+            BitArray messageCoded = new BitArray(countBits, false); // новий пустий масив біт
+
+            for (int i = 0; i < countBits; i++)
             {
-                if (inMessage[i] == '1')
-                    codedArray[i] = true;
+                if (messageArray[i] == true)
+                    messageCoded[i] = true;
                 else
-                    codedArray[i] = false;
+                    messageCoded[i] = false;
             }
-            var decodedArray = new BitArray((int)(codedArray.Count - Math.Ceiling(Math.Log(codedArray.Count, 2))), false);
+            var decodedArray = new BitArray((int)(messageCoded.Count - Math.Ceiling(Math.Log(messageCoded.Count, 2))), false);
             int count = 0;
-            for (int i = 0; i < codedArray.Length; i++)
+            for (int i = 0; i < messageCoded.Length; i++)
             {
-                for (int j = 0; j < Math.Ceiling(Math.Log(codedArray.Count, 2)); j++)
+                for (int j = 0; j < Math.Ceiling(Math.Log(messageCoded.Count, 2)); j++)
                 {
                     if (i == Math.Pow(2, j) - 1)
                         i++;
                 }
-                decodedArray[count] = codedArray[i];
+                decodedArray[count] = messageCoded[i];
                 count++;
             }
-            string strDecodedArray = "";
+            var strDecodedArray = "";
             for (int i = 0; i < decodedArray.Length; i++)
             {
                 if (decodedArray[i])
@@ -85,13 +118,13 @@ namespace HammingCoderVol2
                 else
                     strDecodedArray += "0";
             }
-            var checkArray = Code(strDecodedArray);
+            var checkArray = MyCoding(strDecodedArray);
             byte[] failBits = new byte[checkArray.Length - decodedArray.Length];
             count = 0;
             bool isMistake = false;
             for (int i = 0; i < checkArray.Length - decodedArray.Length; i++)
             {
-                if (codedArray[(int)Math.Pow(2, i) - 1] != checkArray[(int)Math.Pow(2, i) - 1])
+                if (messageCoded[(int)Math.Pow(2, i) - 1] != checkArray[(int)Math.Pow(2, i) - 1])
                 {
                     failBits[count] = (byte)(Math.Pow(2, i));
                     count++;
@@ -104,17 +137,17 @@ namespace HammingCoderVol2
                 for (int i = 0; i < failBits.Length; i++)
                     mistakeIndex += failBits[i];
                 mistakeIndex--;
-                codedArray.Set(mistakeIndex, !codedArray[mistakeIndex]);
+                messageCoded.Set(mistakeIndex, !messageCoded[mistakeIndex]);
                 Console.WriteLine($"Ошибка в бите №{mistakeIndex}");
                 count = 0;
-                for (int i = 0; i < codedArray.Length; i++)
+                for (int i = 0; i < messageCoded.Length; i++)
                 {
-                    for (int j = 0; j < Math.Ceiling(Math.Log(codedArray.Count, 2)); j++)
+                    for (int j = 0; j < Math.Ceiling(Math.Log(messageCoded.Count, 2)); j++)
                     {
                         if (i == Math.Pow(2, j) - 1)
                             i++;
                     }
-                    decodedArray[count] = codedArray[i];
+                    decodedArray[count] = messageCoded[i];
                     count++;
                 }
             }
@@ -124,31 +157,34 @@ namespace HammingCoderVol2
         static void Main(string[] args)
         {
             string choice = null;
-            BitArray code;
+
             while (choice != "3")
             {
-                Console.Write("1. Закодировать сообщение\n2. Декодировать сообщение\n3. Выйти из программы\n");
+                Console.Write("4. Закодировать файл\n5. Декодировать файл\n");
                 choice = Console.ReadLine();
-                switch (choice)
+
+                if (choice == "4")
                 {
-                    case "1":
-                        Console.Write("Введите сообщение: ");
-                        code = Code(Console.ReadLine());
-                        for (int i = 0; i < code.Length; i++)
-                            Console.Write(code[i] ? "1" : "0");
-                        break;
-                    case "2":
-                        Console.Write("Введите сообщение: ");
-                        code = Decode(Console.ReadLine());
-                        for (int i = 0; i < code.Length; i++)
-                            Console.Write(code[i] ? "1" : "0");
-                        break;
-                    case "3":
-                        break;
-                    default:
-                        Console.WriteLine("Неверное число");
-                        break;
+                    //File.Create(Directory.GetCurrentDirectory() + "\\test1.txt");
+                    string path1 = Directory.GetCurrentDirectory() + "\\test1.txt";
+                    if (File.Exists(path1) == false) return; // перевірка на наявність файла
+                    BitArray messageArray = ConvertFileToBitArray(path1); // читаємо файл і записуємо у BitArray
+                    BitArray messageCoded = MyCoding(messageArray); // кодуємо bitArray
+
+                    WriteBitArrayToFile("test2.txt", messageCoded); // записуємо bitArray у файл
                 }
+                if (choice == "5")
+                {
+                    string path1 = Directory.GetCurrentDirectory() + "\\test2.txt";
+                    if (File.Exists(path1) == false) return; 
+                    BitArray messageArray = ConvertFileToBitArray(path1); 
+                    BitArray messageCoded = MyDeCoding(messageArray); 
+
+                    WriteBitArrayToFile("test3.txt", messageCoded); 
+                }
+
+                if (choice == "3") return;
+
                 Console.WriteLine();
             }
         }

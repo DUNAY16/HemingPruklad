@@ -33,12 +33,6 @@ namespace HammingCoderVol2
         {
             int countBits = messageArray.Count; // кількість біт в масиві
             BitArray messageCoded = new BitArray(countBits, false); // новий пустий масив біт
-
-            //for (int i = 0; i < countBits; i+=2) // якесь кодування (це заміни на те що потрібно)
-            //{
-            //    messageCoded[i] = messageArray[i] ^ true;
-            //    messageCoded[i+1] = messageArray[i+1] ^ false;
-            //}
             for (int i = 0; i < countBits; i++)
             {
                 if (messageArray[i] == true)
@@ -110,13 +104,13 @@ namespace HammingCoderVol2
                 decodedArray[count] = messageCoded[i];
                 count++;
             }
-            var strDecodedArray = "";
+            BitArray strDecodedArray = new BitArray(countBits);
             for (int i = 0; i < decodedArray.Length; i++)
             {
                 if (decodedArray[i])
-                    strDecodedArray += "1";
+                    strDecodedArray[i] = true;
                 else
-                    strDecodedArray += "0";
+                    strDecodedArray[i] = false;
             }
             var checkArray = MyCoding(strDecodedArray);
             byte[] failBits = new byte[checkArray.Length - decodedArray.Length];

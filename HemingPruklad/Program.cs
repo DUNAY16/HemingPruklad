@@ -7,12 +7,24 @@ namespace HammingCoderVol2
 {
     class Program
     {
+      static  BitArray messageArray1;
+        static BitArray messageDeCoded;
+        static int dovj;
         static BitArray ConvertFileToBitArray(string path)
         {
             byte[] fileBytes = File.ReadAllBytes(path);
             BitArray messageArray = new BitArray(fileBytes);
 
+
             return messageArray;
+        }
+        static BitArray Convert1FileToBitArray(string path1)
+        {
+            byte[] fileBytes = File.ReadAllBytes(path1);
+            BitArray messageArray1 = new BitArray(fileBytes);
+
+
+            return messageArray1;
         }
 
         static void WriteBitArrayToFile(string fileName, BitArray bitArray)
@@ -28,127 +40,186 @@ namespace HammingCoderVol2
                 fs.Write(bytes, 0, bytes.Length);
             }
         }
-
         static BitArray MyCoding(BitArray messageArray)
         {
             int countBits = messageArray.Count; // кількість біт в масиві
-            BitArray messageCoded = new BitArray(countBits, false); // новий пустий масив біт
-            for (int i = 0; i < countBits; i++)
+            dovj = countBits;
+            int newBits = (int)Math.Ceiling(countBits / 5.0) * 4;
+
+            int lastBits = countBits + newBits;
+            for (int d = 0; d < 100; d++)
             {
-                if (messageArray[i] == true)
-                    messageCoded[i] = true;
+                if (lastBits % 9 == 0)
+                {
+                    break;
+                }
                 else
-                    messageCoded[i] = false;
-            }
-            int messageInd = 0;
-            int retInd = 0;
-            int controlIndex = 1;
-            var retArray = new BitArray(messageCoded.Length + 1 + (int)Math.Ceiling(Math.Log(messageCoded.Length, 2)));
-            while (messageInd < messageCoded.Length)
-            {
-                if (retInd + 1 == controlIndex)
                 {
-                    retInd++;
-                    controlIndex = controlIndex * 2;
-                    continue;
+                    lastBits++;
                 }
-                retArray.Set(retInd, messageCoded.Get(messageInd));
-                messageInd++;
-                retInd++;
             }
-            retInd = 0;
-            controlIndex = 1 << (int)Math.Log(retArray.Length, 2);
-            while (controlIndex > 0)
+            BitArray resultat = new BitArray(lastBits);
+            BitArray messageCoded = new BitArray(lastBits); // новий пустий масив біт
+            for (int i = 0; i < countBits; i += 5)
             {
-                int c = controlIndex - 1;
-                int counter = 0;
 
-                while (c < retArray.Length)
+
+                BitArray pol = new BitArray(5);
+
+                for (int j = 0; j < 5; j++)
                 {
-                    for (int i = 0; i < controlIndex && c < retArray.Length; i++)
+                    if (j + i >= countBits)
                     {
-                        if (retArray.Get(c))
-                            counter++;
-                        c++;
+                        pol[j] = false;
                     }
-                    c += controlIndex;
+                    else
+                    {
+                        pol[j] = messageArray[j + i];
+                    }
                 }
 
-                if (counter % 2 != 0) retArray.Set(controlIndex - 1, true);
-                controlIndex = controlIndex / 2;
+                for (int a = 0; a < 1; a++)
+                {
+                    resultat[2] = pol[4];
+                    resultat[4] = pol[3];
+                    resultat[5] = pol[2];
+                    resultat[6] = pol[1];
+                    resultat[8] = pol[0];
+                }
+                BitArray pol1 = new BitArray(9);
+                for (int a = 0; a < 1; a++)
+                {
+                    pol1[0] = false;
+                    pol1[1] = false;
+                    pol1[2] = pol[4];
+                    pol1[3] = false;
+                    pol1[4] = pol[3];
+                    pol1[5] = pol[2];
+                    pol1[6] = pol[1];
+                    pol1[7] = false;
+                    pol1[8] = pol[0];
+                }
+                BitArray m1 = new BitArray(9);     //(1, 0, 1, 0, 1, 0, 1, 0, 1);
+                m1[0] = true; m1[1] = false; m1[2] = true; m1[3] = false; m1[4] = true; m1[5] = false; m1[6] = true; m1[7] = false; m1[8] = true;
+                BitArray m2 = new BitArray(9);       //(0, 1, 1, 0, 0, 1, 1, 0, 0);
+                m2[0] = false; m2[1] = true; m2[2] = true; m2[3] = false; m2[4] = false; m2[5] = true; m2[6] = true; m2[7] = false; m2[8] = false;
+                BitArray m3 = new BitArray(9);       //(0, 0, 0, 1, 1, 1, 1, 0, 0);
+                m3[0] = false; m3[1] = false; m3[2] = false; m3[3] = true; m3[4] = true; m3[5] = true; m3[6] = true; m3[7] = false; m3[8] = false;
+                BitArray m4 = new BitArray(9);      //(0, 0, 0, 0, 0, 0, 0, 1, 1);
+                m4[0] = false; m4[1] = false; m4[2] = false; m4[3] = false; m4[4] = false; m4[5] = false; m4[6] = false; m4[7] = true; m4[8] = true;
+                BitArray sohran = new BitArray(4);
+                int provirka = 0;
+                int provirka1 = 0;
+                int provirka2 = 0;
+                int provirka3 = 0;
+                for (int k = 0; k < 4; k++)
+                {
+                    if (k == 0)
+                    {
+                        for (int l = 0; l < 9; l++)
+                        {
+                            if (pol1[l] & m1[l] == true)
+                            {
+                                provirka++;
+                            }
+                            else { }
+                        }
+                    }
+                    if (k == 1)
+                    {
+                        for (int l = 0; l < 9; l++)
+                        {
+                            if (pol1[l] & m2[l] == true)
+                            {
+                                provirka1++;
+                            }
+                            else { }
+                        }
+                    }
+                    if (k == 2)
+                    {
+                        for (int l = 0; l < 9; l++)
+                        {
+                            if (pol1[l] & m3[l] == true)
+                            {
+                                provirka2++;
+                            }
+                            else { }
+                        }
+                    }
+                    if (k == 3)
+                    {
+                        for (int l = 0; l < 9; l++)
+                        {
+                            if (pol1[l] & m4[l] == true)
+                            {
+                                provirka3++;
+                            }
+                            else { }
+                        }
+                    }
+                }
+                if (provirka % 2 == 0)
+                {
+                    resultat[0] = false;
+                }
+                else { resultat[0] = true; }
+                if (provirka1 % 2 == 0)
+                {
+                    resultat[1] = false;
+                }
+                else { resultat[1] = true; }
+                if (provirka2 % 2 == 0)
+                {
+                    resultat[3] = false;
+                }
+                else { resultat[3] = true; }
+                if (provirka3 % 2 == 0)
+                {
+                    resultat[7] = false;
+                }
+                else { resultat[7] = true; }
+
+
+
+
+                for (int k = 0; k < 9; k++)
+                {
+                    messageCoded[k + (9 * (i / 5))] = resultat[k];
+                }
+
             }
-            return retArray;
-            //return messageCoded;
+
+            return messageCoded;
         }
-        static BitArray MyDeCoding(BitArray messageArray)
+
+        static BitArray MyDeCoding(BitArray messageArray1)
         {
-            int countBits = messageArray.Count; // кількість біт в масиві
-            BitArray messageCoded = new BitArray(countBits, false); // новий пустий масив біт
-
-            for (int i = 0; i < countBits; i++)
+            int countBits = messageArray1.Count; // кількість біт в масиві
+            BitArray messageDeCoded = new BitArray(dovj); // новий пустий масив біт
+            int a = 2;
+            int b = 4;
+            int r = 5;
+            int c = 6;
+            int m = 8;
+            for (int i = 0; i< countBits; i+=5)
             {
-                if (messageArray[i] == true)
-                    messageCoded[i] = true;
-                else
-                    messageCoded[i] = false;
+                //if (c == 15) { break; }
+                messageDeCoded[i] = messageArray1[a];
+                messageDeCoded[i+1] = messageArray1[b];
+                messageDeCoded[i+2] = messageArray1[r];
+                messageDeCoded[i+3] = messageArray1[c];
+                messageDeCoded[i+4] = messageArray1[m];
+                 a += 9;
+                 b += 9;
+                 r += 9;
+                 c += 9;
+                 m += 9;
             }
-            var decodedArray = new BitArray((int)(messageCoded.Count - Math.Ceiling(Math.Log(messageCoded.Count, 2))), false);
-            int count = 0;
-            for (int i = 0; i < messageCoded.Length; i++)
-            {
-                for (int j = 0; j < Math.Ceiling(Math.Log(messageCoded.Count, 2)); j++)
-                {
-                    if (i == Math.Pow(2, j) - 1)
-                        i++;
-                }
-                decodedArray[count] = messageCoded[i];
-                count++;
-            }
-            BitArray strDecodedArray = new BitArray(countBits);
-            for (int i = 0; i < decodedArray.Length; i++)
-            {
-                if (decodedArray[i])
-                    strDecodedArray[i] = true;
-                else
-                    strDecodedArray[i] = false;
-            }
-            var checkArray = MyCoding(strDecodedArray);
-            byte[] failBits = new byte[checkArray.Length - decodedArray.Length];
-            count = 0;
-            bool isMistake = false;
-            for (int i = 0; i < checkArray.Length - decodedArray.Length; i++)
-            {
-                if (messageCoded[(int)Math.Pow(2, i) - 1] != checkArray[(int)Math.Pow(2, i) - 1])
-                {
-                    failBits[count] = (byte)(Math.Pow(2, i));
-                    count++;
-                    isMistake = true;
-                }
-            }
-            if (isMistake)
-            {
-                int mistakeIndex = 0;
-                for (int i = 0; i < failBits.Length; i++)
-                    mistakeIndex += failBits[i];
-                mistakeIndex--;
-                messageCoded.Set(mistakeIndex, !messageCoded[mistakeIndex]);
-                Console.WriteLine($"Ошибка в бите №{mistakeIndex}");
-                count = 0;
-                for (int i = 0; i < messageCoded.Length; i++)
-                {
-                    for (int j = 0; j < Math.Ceiling(Math.Log(messageCoded.Count, 2)); j++)
-                    {
-                        if (i == Math.Pow(2, j) - 1)
-                            i++;
-                    }
-                    decodedArray[count] = messageCoded[i];
-                    count++;
-                }
-            }
-            return decodedArray;
+            return messageDeCoded;
         }
 
-        static void Main(string[] args)
+            static void Main(string[] args)
         {
             string choice = null;
 
@@ -169,13 +240,13 @@ namespace HammingCoderVol2
                 }
                 if (choice == "5")
                 {
-                    string path1 = Directory.GetCurrentDirectory() + "\\test2.txt";
-                    if (File.Exists(path1) == false) return; 
-                    BitArray messageArray = ConvertFileToBitArray(path1); 
-                    BitArray messageCoded = MyDeCoding(messageArray); 
+                        string path1 = Directory.GetCurrentDirectory() + "\\test2.txt";
+                        if (File.Exists(path1) == false) return;
+                        BitArray messageArray1 = Convert1FileToBitArray(path1);
+                        BitArray messageDeCoded = MyDeCoding(messageArray1);
 
-                    WriteBitArrayToFile("test3.txt", messageCoded); 
-                }
+                        WriteBitArrayToFile("test3.txt", messageDeCoded);
+                    }
 
                 if (choice == "3") return;
 

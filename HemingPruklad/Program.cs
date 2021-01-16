@@ -197,25 +197,26 @@ namespace HammingCoderVol2
         {
             int countBits = messageArray1.Count; // кількість біт в масиві
             BitArray messageDeCoded = new BitArray(dovj); // новий пустий масив біт
-            int a = 2;
-            int b = 4;
+            int a = 8;
+            int b = 6;
             int r = 5;
-            int c = 6;
-            int m = 8;
-            for (int i = 0; i< countBits; i+=5)
+            int c = 4;
+            int m = 2;
+            int d = 17;
+            int s = 15;
+            int o = 14;
+            for (int i = 0; i<=1; i+=5)
             {
-                //if (c == 15) { break; }
                 messageDeCoded[i] = messageArray1[a];
                 messageDeCoded[i+1] = messageArray1[b];
                 messageDeCoded[i+2] = messageArray1[r];
                 messageDeCoded[i+3] = messageArray1[c];
                 messageDeCoded[i+4] = messageArray1[m];
-                 a += 9;
-                 b += 9;
-                 r += 9;
-                 c += 9;
-                 m += 9;
+                messageDeCoded[i + 5] = messageArray1[d];
+                messageDeCoded[i + 6] = messageArray1[s];
+                messageDeCoded[i + 7] = messageArray1[o];
             }
+
             return messageDeCoded;
         }
 

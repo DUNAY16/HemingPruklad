@@ -10,6 +10,7 @@ namespace HammingCoderVol2
       static  BitArray messageArray1;
         static BitArray messageDeCoded;
         static int dovj;
+        static int pochatok;
         static BitArray ConvertFileToBitArray(string path)
         {
             byte[] fileBytes = File.ReadAllBytes(path);
@@ -43,6 +44,7 @@ namespace HammingCoderVol2
         static BitArray MyCoding(BitArray messageArray)
         {
             int countBits = messageArray.Count; // кількість біт в масиві
+            pochatok = messageArray.Count;
             dovj = countBits;
             int newBits = (int)Math.Ceiling(countBits / 5.0) * 4;
 
@@ -197,26 +199,26 @@ namespace HammingCoderVol2
         {
             int countBits = messageArray1.Count; // кількість біт в масиві
             BitArray messageDeCoded = new BitArray(dovj); // новий пустий масив біт
+            int schet = countBits;
             int a = 8;
             int b = 6;
             int r = 5;
             int c = 4;
             int m = 2;
-            int d = 17;
-            int s = 15;
-            int o = 14;
-            for (int i = 0; i<=1; i+=5)
+            for (int i = 0; i< schet ; i+=5)
             {
+                if (i + 3 >= dovj || i + 4 >= dovj || i + 2 >= dovj || i + 1 >= dovj || i  >= dovj) { break; }
                 messageDeCoded[i] = messageArray1[a];
                 messageDeCoded[i+1] = messageArray1[b];
                 messageDeCoded[i+2] = messageArray1[r];
                 messageDeCoded[i+3] = messageArray1[c];
                 messageDeCoded[i+4] = messageArray1[m];
-                messageDeCoded[i + 5] = messageArray1[d];
-                messageDeCoded[i + 6] = messageArray1[s];
-                messageDeCoded[i + 7] = messageArray1[o];
+                 a += 9;
+                 b += 9;
+                 r += 9;
+                 c += 9;
+                 m += 9;
             }
-
             return messageDeCoded;
         }
 
